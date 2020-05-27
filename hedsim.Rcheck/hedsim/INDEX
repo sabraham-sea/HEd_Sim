@@ -1,0 +1,7 @@
+collect_data            Returns a sql query as a data frame
+get_connection          Returns a jdbc connection to redshift
+get_environment_variable
+                        Get environment wariable with additional
+                        warning handling
+get_sql_statement       Returns the contents of a sql file within the
+                        package
