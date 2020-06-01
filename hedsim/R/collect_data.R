@@ -6,23 +6,23 @@ require(rvdata.jdbc)
 require(skimr)
 require(fpp3)
 
-#' @title Returns a sql query as a data frame
-#' @description Initializes connection, reads sql statement and returns result as a data frame
+#' #' @title Returns a sql query as a data frame
+#' #' @description Initializes connection, reads sql statement and returns result as a data frame
+#' #'
+#' #'
+#' #' @return dataframe
+#' #' @import DBI
 #'
+#' collect_data<-function()
+#' {
 #'
-#' @return dataframe
-#' @import DBI
-
-collect_data<-function()
-{
-
-  connection_string <- get_environment_variable("CONNECTION_STRING_HED_REDSHIFT")
-  connection <- get_connection(connection_string)
-  sql_statment <- get_sql_statement("CDM_appview.sql")
-  results <- DBI::dbGetQuery(connection, sql_statment)
-  DBI::dbDisconnect(connection)
-  return(results)
-}
+#'   connection_string <- get_environment_variable("CONNECTION_STRING_HED_REDSHIFT")
+#'   connection <- get_connection(connection_string)
+#'   sql_statment <- get_sql_statement("CDM_appview.sql")
+#'   results <- DBI::dbGetQuery(connection, sql_statment)
+#'   DBI::dbDisconnect(connection)
+#'   return(results)
+#' }
 
 # Collect data
 
@@ -30,12 +30,20 @@ collect_data<-function()
 require(dplyr)
 require(skimr)
 
+  connection_string <- get_environment_variable("CONNECTION_STRING_HED_REDSHIFT")
+  connection <- get_connection(connection_string)
 
-query_statement <- readr::read_file("/Users/sabraham/Documents/GitHub/HEd_Sim/hedsim/inst/CDM_appview.sql")
+query_statement <- readr::read_file("/Users/sabraham/Documents/GitHub/HEd_Sim/hedsim/inst/CDM_appview_refresh.sql")
 CDM_appview <- DBI::dbGetQuery(connection, query_statement)
 
 skim(CDM_appview)
 
+
+# query_statement <- readr::read_file("/Users/sabraham/Documents/GitHub/HEd_Sim/hedsim/inst/CDM_appview.sql")
+# CDM_appview1 <- DBI::dbGetQuery(connection, query_statement)
+#
+#
+# skim(CDM_appview1)
 
 query_statement1 <- readr::read_file("/Users/sabraham/Documents/GitHub/HEd_Sim/hedsim/inst/CDM_traffic.sql")
 CDM_traffic <- DBI::dbGetQuery(connection, query_statement1)

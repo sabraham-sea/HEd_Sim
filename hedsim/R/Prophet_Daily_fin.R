@@ -1,4 +1,6 @@
 require(prophet)
+
+trf_daily_final<-readRDS('trf_daily_final.RDS')
 #####  Daily Prophet : Do at the cap - id level ####
 
 
@@ -11,7 +13,7 @@ cap_data_daily<-trf_daily_clean%>%select(cap_id, school_name,date,accepted_cpl_l
   summarize(cpl_leads=sum(accepted_cpl_leads),cpl_views=sum(accepted_cpl_appviews),cpc_clicks=sum(accepted_cpc_clicks),
             cpc_leads=sum(accepted_cpc_leads),imptrf=sum(`daily_new$combined_daily.dcs_traffic`),
             accepted_revenue=sum(accepted_revenue),billable_revenue=sum(billable_revenue),
-            revised_revenue=sum(revised_revenue))
+            revised_revenue=sum(revised_revenue))%>%filter(!is.na(cap_id))
 
 
 ## Only SNHU Capid 1014

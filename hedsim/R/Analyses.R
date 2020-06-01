@@ -15,7 +15,7 @@ CDM_traffic%>%mutate(yrmnth=yearmonth(date),yr=year(date))%>%group_by(yr)%>%skim
 CDM_traffic%>%mutate(yrmnth=yearmonth(date),yr=year(date))%>%group_by(yr)%>%select(subject_name,category_name,yr)%>%skim()
 
 # CDM APPviews
-query_statement <- readr::read_file("/Users/sabraham/Documents/GitHub/HEd_Sim/hedsim/inst/CDM_appview.sql")
+query_statement <- readr::read_file("/Users/sabraham/Documents/GitHub/HEd_Sim/hedsim/inst/CDM_appview_refresh.sql")
 CDM_appview <- DBI::dbGetQuery(connection, query_statement)
 CDM_appview_yr<-CDM_appview%>%mutate(yrmnth=yearmonth(date),yr=year(date))%>%select(-date)
 
@@ -252,7 +252,7 @@ densityplot(imputed_CDM)
 trf_new<-cbind(imputed_CDMdata$combined_trf_app.dcs_trf ,combined_trf_app)
 saveRDS(trf_new,"trf_new.RDS")
 
-######## Combine traffic-views : daily :
+######## Combine traffic-views : daily : USE THIS
 
 combined_daily<-left_join(CDM_appview,CDM_traffic,by=c("date","cap_id","school_name","degree_name","subject_name"))
 
