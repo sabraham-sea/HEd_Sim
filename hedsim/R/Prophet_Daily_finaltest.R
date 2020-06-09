@@ -32,7 +32,7 @@ SNHU_traffic<-cap_data_daily%>%filter(school_name=='southern-new-hampshire-unive
   rename(y=imptrf, ds=date)
 
 trf_prf <- prophet(SNHU_traffic, daily.seasonality='auto', weekly.seasonality='auto', mcmc.samples = 1000)
-trf_daily <- make_future_dataframe(trf_prf , periods = 30,freq="day")
+trf_daily <- make_future_dataframe(trf_prf , periods = 31,freq="day")
 trf_daily_forecast <- predict(trf_prf, trf_daily)
 tail(trf_daily_forecast[c('ds', 'yhat', 'yhat_lower', 'yhat_upper')])
 plot(trf_prf, trf_daily_forecast)
@@ -47,7 +47,7 @@ SNHU_views<-cap_data_daily%>%filter(school_name=='southern-new-hampshire-univers
   rename(y=cpl_views, ds=date)
 
 views_prf <- prophet(SNHU_views, daily.seasonality='auto', weekly.seasonality='auto', mcmc.samples = 1000)
-views_daily <- make_future_dataframe(views_prf , periods = 30,freq="day")
+views_daily <- make_future_dataframe(views_prf , periods = 31,freq="day")
 views_daily_forecast <- predict(views_prf, views_daily)
 tail(views_daily_forecast[c('ds', 'yhat', 'yhat_lower', 'yhat_upper')])
 plot(views_prf, views_daily_forecast)
@@ -67,7 +67,7 @@ cpl_daily<-add_regressor(cpl_prf,name='imptrf')
 cpl_daily<-add_regressor(cpl_prf,name='cpl_views')
 cpl_prf2<- fit.prophet(cpl_daily, SNHU_cpl)
 
-leads_df <- make_future_dataframe(cpl_prf2, periods = 30,freq="day")
+leads_df <- make_future_dataframe(cpl_prf2, periods = 31,freq="day")
 
 
 df_all <- leads_df  %>% left_join(select(trf_daily_forecast, yhat,ds), by = 'ds')%>%rename(imptrf=yhat)

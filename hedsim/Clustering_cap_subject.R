@@ -1,6 +1,6 @@
 require(dplyr)
 require(tidyr)
-############ Clusters based on degree type ####
+##### Clusters based on degree type ####
 #####  hierarchical clustering based on dcs #####
 
 caplist<-trf_daily%>%select(cap_id)%>%

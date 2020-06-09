@@ -1,4 +1,5 @@
 options(java.parameters = "-Xmx8g")
+install.packages("xlsx")
 library(xlsx)
 
 install.packages("skimr")
@@ -158,4 +159,25 @@ legacy_traffic<-legacy_traffic%
 
 
 
+#########3
 
+connection_string <- get_environment_variable("CONNECTION_STRING_HED_REDSHIFT")
+connection <- get_connection(connection_string)
+
+query_statement <- readr::read_file("/Users/sabraham/Documents/GitHub/HEd_Sim/hedsim/inst/DE_Fact.sql")
+DE_fact <- DBI::dbGetQuery(connection, query_statement)
+
+
+query_statement <- readr::read_file("/Users/sabraham/Documents/GitHub/HEd_Sim/hedsim/inst/DE_test.sql")
+DE_test<- DBI::dbGetQuery(connection, query_statement)
+
+DE_testgp<-DE_test%>%group_by(month)%>%summarise(erpi=mean(avg_erpi,na.rm=TRUE))
+skim(DE_fact1)
+
+query_statement <- readr::read_file("/Users/sabraham/Documents/GitHub/HEd_Sim/hedsim/inst/DE_test.sql")
+DE_test<- DBI::dbGetQuery(connection, query_statement)
+
+query_statement <- readr::read_file("/Users/sabraham/Documents/GitHub/HEd_Sim/hedsim/inst/DE_errchk.sql")
+DE_errchk<- DBI::dbGetQuery(connection, query_statement)
+
+skim(DE_errchk)
