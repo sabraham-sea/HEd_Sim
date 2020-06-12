@@ -130,12 +130,31 @@ cluster3<-clusterlist$`3`%>%rownames_to_column("id")%>% mutate(cap_degree=id)%>%
     
   )
 
+cluster4<-clusterlist$`4`%>%rownames_to_column("id")
+cluster5<-clusterlist$`5`%>%rownames_to_column("id")
+
+saveRDS(cluster1,"Cluster1Subject.RDS")
+saveRDS(cluster2,"Cluster2Subject.RDS")
+saveRDS(cluster3,"Cluster3Subject.RDS")
+saveRDS(cluster4,"Cluster4Subject.RDS")
+saveRDS(cluster5,"Cluster5Subject.RDS")
+
+saveRDS(r2, "Cap_Degree_subjects.RDS")
+
 ############################# Finalize Clusters ###########################
 
-Clus1<-cluster1%>%select(cap_degree,finalcluster)%>%distinct()
-Clus2<-cluster2%>%select(cap_degree,finalcluster)%>%distinct()
-Clus3<-cluster3%>%select(cap_degree,finalcluster)%>%distinct()
+Clus1<-cluster1%>%select(id)%>%distinct()%>%mutate(clusno='1')
+Clus2<-cluster2%>%select(id)%>%distinct()%>%mutate(clusno='2')
+Clus3<-cluster3%>%select(id)%>%distinct()%>%mutate(clusno='3')
+Clus4<-cluster4%>%select(id)%>%distinct()%>%mutate(clusno='4')
+Clus5<-cluster5%>%select(id)%>%distinct()%>%mutate(clusno='5')
 
-Combined_Cluster<-rbind(Clus1,Clus2,Clus3)%>%mutate(id=cap_degree)%>%separate(id, into = c("cap_id","degree"))
-
+Combined_Cluster<-rbind(Clus1,Clus2,Clus3,Clus4,Clus5)%>%rename(cap_id=id)
 saveRDS(Combined_Cluster,"Combined_Cluster.RDS")
+
+
+########### Adding degree back in #################
+
+capdeg<-r2%>%select(cap_id,degree_name)
+
+Combined_Cluster_Degree<-left_join(capdeg,Combined_Cluster,by=c("cap_id"))
