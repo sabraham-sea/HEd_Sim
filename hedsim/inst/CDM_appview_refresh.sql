@@ -1,13 +1,15 @@
 SELECT
     ot.cap_id,
+    prov.id                   as provider_id,
+    prov.school_id    as school_id,
+    prov.name                 as provider,
     date,
     spc.name                  as cap_name,
     ot.school_name,
     ot.degree_name,
     ot.category_name,
     ot.subject_name,
-    prov.id                   as school_provider_id,
-    prov.name                 as provider,
+
       ot.accepted_probability,
        ot.accepted_revenue,
        ot.revised_probability,
@@ -23,6 +25,6 @@ LEFT JOIN dev.he_tables.school_provider_cap AS spc
     ON spc.id = OT.cap_id
 LEFT JOIN dev.he_tables.school_provider AS prov
     ON prov.id = spc.provider_id
+GROUP BY 1, 2,3, 4, 5,6,7,8,9,10,11,12,13,14,15,16
+order by 4
 
-GROUP BY 1, 2,3, 4, 5,6,7,8,9,10,11,12,13,14,15
-order by 2

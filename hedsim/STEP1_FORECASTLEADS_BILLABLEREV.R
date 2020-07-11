@@ -1,5 +1,21 @@
 ## STEP 1 FORECAST LEADS WITH REVENUE
 
+trf_daily_final<-readRDS('trf_daily_final.RDS')
+trf_daily_clean<-trf_daily_final%>%mutate_at(c(12,14,16), ~replace(., is.na(.), 0))
+cap_data_daily<-trf_daily_clean%>%filter(date<='2020-04-30')%>%dplyr::select(cap_id, school_name,date,accepted_cpl_leads,accepted_cpl_appviews,accepted_cpc_clicks,accepted_cpc_leads,
+                                                accepted_revenue,billable_revenue,revised_revenue,
+                                                `daily_new$combined_daily.dcs_traffic`)%>%
+      group_by(cap_id, school_name,date)%>%
+     summarize(cpl_leads=sum(accepted_cpl_leads),cpl_views=sum(accepted_cpl_appviews),cpc_clicks=sum(accepted_cpc_clicks),
+            cpc_leads=sum(accepted_cpc_leads),imptrf=sum(`daily_new$combined_daily.dcs_traffic`))%>%filter(!is.na(cap_id))
+
+pricelist<-trf_daily_clean%>%select(cap_id,accepted_revenue,billable_revenue,revised_revenue,date)%>%filter(date=='2020-04-01' & accepted_revenue>0)%>%distinct()
+
+caplist<-pricelist$cap_id
+
+datechk<-'2020-04-30'
+period_rng<-31
+capid<-'1010'
 
 pred_forecast<-function(capid,datechk,period_rng)
 {
@@ -7,7 +23,7 @@ pred_forecast<-function(capid,datechk,period_rng)
   set.seed(1234)
   # Make traffic forecasts
   cap_traffic<-cap_data_daily%>%filter(cap_id==capid)%>%
-    filter(date <= datechk )%>%
+    filter(date <= datechk )%>% 
     rename(y=imptrf, ds=date)
   
   # Make traffic forecasts
@@ -45,8 +61,11 @@ pred_forecast<-function(capid,datechk,period_rng)
   # df_all <- leads_df%>%left_join(dplyr::select(trf_daily_forecast,yhat,ds), by = 'ds')%>%rename(imptrf=yhat)
   # df_all <- df_all  %>% left_join(dplyr::select(views_daily_forecast, yhat,ds), by = 'ds')%>%rename(cpl_views=yhat)
   
-  df_all <- leads_df%>%left_join(dplyr::select(trf_daily_forecast,yhat_lower,ds), by = 'ds')%>%rename(imptrf=yhat_lower)
-  df_all <- df_all  %>% left_join(dplyr::select(views_daily_forecast, yhat_lower,ds), by = 'ds')%>%rename(cpl_views=yhat_lower)
+  # df_all <- leads_df%>%left_join(dplyr::select(trf_daily_forecast,yhat_lower,ds), by = 'ds')%>%rename(imptrf=yhat_lower)
+  # df_all <- df_all  %>% left_join(dplyr::select(views_daily_forecast, yhat_lower,ds), by = 'ds')%>%rename(cpl_views=yhat_lower)
+  
+  df_all <- leads_df%>%left_join(dplyr::select(trf_daily_forecast,yhat,ds), by = 'ds')%>%rename(imptrf=yhat)
+  df_all <- df_all  %>% left_join(dplyr::select(views_daily_forecast, yhat,ds), by = 'ds')%>%rename(cpl_views=yhat)
   
   forecast_cpl <- predict(cpl_prf2, df_all)
   # tail(forecast_cpl[c('ds', 'yhat_lower','yhat')])
@@ -75,10 +94,9 @@ pred_forecast<-function(capid,datechk,period_rng)
 ##  FINAL using cluster
 ### Loop thru all cap-ids
 
-caplist<-trf_daily_clean%>%filter(!is.na(cap_id) & date >= '2020-01-01' )%>%dplyr::select(cap_id)%>%distinct()%>%as.data.frame()
-cc<-head(caplist,n=5)%>%as.data.frame()
-datechk<-'2020-04-30'
-period_rng<-31
+n1<-NROW(caplist)
+cc<-head(caplist,n=n1)%>%as.data.frame()%>%rename(cap_id= ".")
+
 
 library(doParallel)
 library(prophet)
@@ -95,8 +113,29 @@ stopCluster(cl)
 ### Multiply by CPL 
 forcast_leads1<-forcast_leads%>%unlist()%>%as.data.frame()%>%rename(forcast= ".")
 forcast_leads1<-cbind(forcast_leads1,cc)
-pricelist<-trf_daily_clean%>%select(cap_id,accepted_revenue,billable_revenue,revised_revenue,date)%>%filter(date=='2020-04-01' & accepted_revenue>0)%>%distinct()
 billable_leadrevenue<-left_join(forcast_leads1,pricelist,by="cap_id")%>%mutate(forcast_billable=forcast*accepted_revenue)%>%filter(!is.na(accepted_revenue))
 
+## FIND FINAL CAPLIST##
+overall_cap<-trf_daily_clean%>%filter(date<='2020-04-30')%>%mutate(yrmnth=zoo::as.yearmon(date))%>%
+  group_by(yrmnth,cap_id)%>%
+  summarise(cpl_leads=sum(accepted_cpl_leads),cpl_views=sum(accepted_cpl_appviews),cpc_clicks=sum(accepted_cpc_clicks),
+            cpc_leads=sum(accepted_cpc_leads),imptrf=sum(`daily_new$combined_daily.dcs_traffic`))%>%
+  ungroup()%>%filter(!is.na(cap_id))%>%mutate(ctr=(cpl_views/imptrf),cr=(cpl_leads/cpl_views))
+################
 
+
+overall_cap<-left_join(overall_cap,pricelist,by="cap_id")%>%filter(!is.na(accepted_revenue))
+notlist<-which(!cc$cap_id %in% overall_cap$cap_id)
+finalcaplist<-caplist[-notlist]
+
+cap_list<-as.data.frame(finalcaplist)%>%rename('cap_id'="finalcaplist")
+
+# Check from erpi data
+clean_erpi<- DE_MCData3%>%filter(school_capid != 'NA')%>%rename("cap_id"="school_capid") 
+erpi_caplist<-clean_erpi%>%select(cap_id)%>%distinct()
+erpi_caplist$cap_id<-as.character(erpi_caplist$cap_id)
+
+final_list<-inner_join(cap_list,erpi_caplist,by="cap_id")
+
+tbillable_leadrevenue<-billable_leadrevenue_all%>%filter(cap_id %in% final_list$cap_id)  # for testing
 

@@ -1,4 +1,5 @@
-options(java.parameters = "-Xmx8g")
+options(java.parameters = c("-XX:+UseConcMarkSweepGC", "-Xmx8192m"))
+library(xlsx)
 install.packages("xlsx")
 library(xlsx)
 

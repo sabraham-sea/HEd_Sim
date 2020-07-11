@@ -254,8 +254,11 @@ saveRDS(trf_new,"trf_new.RDS")
 
 ######## Combine traffic-views : daily : USE THIS
 
-combined_daily<-left_join(CDM_appview,CDM_traffic,by=c("date","cap_id","school_name","degree_name","subject_name"))
+CDM_traffic_clean<-CDM_traffic%>%filter(cap_id != '')
+CDM_appview_clean<-CDM_appview%>%filter(cap_id!='')
 
+combined_daily<-left_join(CDM_appview_clean,CDM_traffic_clean,by=c("date","cap_id","school_name","degree_name","subject_name"))
+combined_daily_inner<-inner_join(CDM_appview_clean,CDM_traffic_clean,by=c("date","cap_id","school_name","degree_name","subject_name"))
 
 traffic_missing<-md.pattern(combined_daily)
 mice_plot <- aggr(traffic_missing, col=c('navyblue','yellow'),
@@ -275,6 +278,6 @@ saveRDS(trf_daily_final,"trf_daily_final.RDS")
 
 
 
+cc<-combined_daily%>%filter(cap_id!='NA')
 
-
-
+cc1<-cc%>%filter(cap_id == '965' & date =='2020-05-18')

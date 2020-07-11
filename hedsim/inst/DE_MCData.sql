@@ -1,6 +1,5 @@
 SELECT def.year,
                 def.month,
-                def.date,
                 def.msg_experience,
                 def.msg_formattype,
                 def.msg_degree,
@@ -31,7 +30,7 @@ LEFT OUTER JOIN he_tables.cap_info AS cap
 ON def.school_capid = cap.cap_id
        AND cap.year = def.year
        AND cap.month = def.month
-WHERE def.date > current_date - 30
+WHERE def.date > current_date -15
 AND cap.cap_status IN ('ENABLED','enabled','active')
---AND cap.school_name IS NOT NULL
-GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
+AND cap.school_name IS NOT NULL
+GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15

@@ -1,3 +1,12 @@
+
+billable_leadrevenue<-tbillable_leadrevenue
+# Find baseline
+
+rsquared_erpi<-rsquared_erpi%>%unlist()%>%as.data.frame()%>%rename('rsq_erpi'='.')
+rsquared_imp<-rsquared_imp%>%unlist()%>%as.data.frame()%>%rename('rsq_imp'='.')
+Combined_baseline<-cbind(predicted_impression,predicted_erpi,tbillable_leadrevenue,rsquared_erpi,rsquared_imp)
+Combined_baseline$forcast_billrev<-Combined_baseline$pred_imp*Combined_baseline$pred_erpi
+Combined_baseline<-Combined_baseline[!duplicated(as.list(Combined_baseline))]
 # FIND DELTA LEAD
 
 delta_lead<-function(capid,finalbillable)
@@ -18,10 +27,10 @@ implead<-function(capid)
   return(model_implead)
 }
 
-deltalead<-delta_lead('856',600000) # enter capid, and final billable
+deltalead<-delta_lead('3143',600000) # enter capid, and final billable
 
 # return index of 856 in cc
-ind<-which(cc$cap_id=='856')
+ind<-which(final_list$cap_id=='3143')
 
 #Predict the associated impressions of delta lead 
 
@@ -40,7 +49,8 @@ clustcap<-Combined_Cluster%>%filter(clusno==clustno$clusno)%>%select(cap_id)
 
 # Get predicted erpi for 2273
 
-Combined_baseline<-cbind(predicted_impression,predicted_epri,billable_leadrevenue)
+
+# Adjust the allocation
 
 
 

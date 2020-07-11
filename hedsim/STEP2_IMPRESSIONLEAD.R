@@ -1,3 +1,4 @@
+options(scipen = 99999)
 ### MODEL IMPRESSION~LEAD RELATIONSHIP ###
 
 overall_cap<-trf_daily_clean%>%filter(date<='2020-04-30')%>%mutate(yrmnth=zoo::as.yearmon(date))%>%
@@ -9,7 +10,6 @@ overall_cap<-trf_daily_clean%>%filter(date<='2020-04-30')%>%mutate(yrmnth=zoo::a
 # Combine with cpl
 
 overall_cap<-left_join(overall_cap,pricelist,by="cap_id")%>%filter(!is.na(accepted_revenue))
-
 
 
 implead<-function(capid)
@@ -29,7 +29,7 @@ no_cores <- detectCores() - 1
 registerDoParallel(cores=no_cores)
 cl <- makeCluster(no_cores, type="FORK")
 clusterExport(cl,list('overall_cap'), envir = environment())
-system.time(unlist <- parLapply(cl,cc$cap_id,implead))
+system.time(result_implead<- parLapply(cl,final_list$cap_id,implead))
 stopCluster(cl)
 
 
@@ -37,20 +37,34 @@ stopCluster(cl)
 
 
 ## 1 case
-delta_imp1<-predict(result_implead[[1]], new=data.frame(cpl_leads=billable_leadrevenue$forcast[1]))
+delta_imp1<-predict(result_implead[[2]], new=data.frame(cpl_leads=billable_leadrevenue$forcast[2]))
+
+billable_leadrevenue<-billable_leadrevenue_all%>%filter(cap_id %in% final_list$cap_id)
+
 
 # Loop thru all cases
 pred_imp<-list()
+n2<-NROW(final_list)
 i=1
-for (i in 1:5)
+for (i in 1:n2)
 {
 pred_imp[[i]]<-predict(result_implead[[i]], new=data.frame(cpl_leads=billable_leadrevenue$forcast[i]))
 i=i+1
 }
 
-predicted_impre<-pred_imp%>%unlist()%>%cbind(cc)%>%rename( 'pred_imp'='.')
+predicted_impression<-pred_imp%>%unlist()%>%cbind(final_list)%>%as.data.frame()%>%rename( 'pred_imp'='.')
+predicted_impression$pred_imp<-as.numeric(predicted_impression$pred_imp)
 
 
 
+# Loop thru all cases
+rsquared_imp<-list()
+n2<-NROW(final_list)
+i=1
+for (i in 1:n2)
+{
+  rsquared_imp[[i]]<-rsq(result_implead[[i]])
+  i=i+1
+}
 
 
