@@ -5,20 +5,21 @@ options(scipen = 9999)
 datechk<-'2020-05-31'  # Last date of previous month
 period_rng<-30         # Duration of next month
 ###########################3
-trf_daily_final<-readRDS('trf_daily_final_July.RDS')
-trf_daily_clean<-trf_daily_final%>%mutate_at(c(12,14,16), ~replace(., is.na(.), 0))
-cap_data_daily<-trf_daily_clean%>%filter(date<=datechk)%>%dplyr::select(cap_id, school_name,date,degree_name,subject_name,accepted_cpl_leads,accepted_cpl_appviews,accepted_cpc_clicks,accepted_cpc_leads,
-                                                                             accepted_revenue,billable_revenue,revised_revenue,
-                                                                             `daily_new$combined_daily.dcs_traffic`)%>%
+trf_daily_final<-readRDS('trf_daily_final_July12.RDS')
+trf_daily_clean<-trf_daily_final
+cap_data_daily<-trf_daily_clean%>%filter(date<=datechk)%>%dplyr::select(date,cap_id,provider_id,school_id, school_name,date,degree_name,subject_name,cpl_leads,cpl_views,cpc_clicks,cpc_leads,imptraf
+                                                                           )%>%
     group_by(cap_id,school_name,date)%>%
-    summarize(cpl_leads=sum(accepted_cpl_leads),cpl_views=sum(accepted_cpl_appviews),cpc_clicks=sum(accepted_cpc_clicks),
-              cpc_leads=sum(accepted_cpc_leads),imptrf=sum(`daily_new$combined_daily.dcs_traffic`))%>%filter(!is.na(cap_id))%>%ungroup()
+    summarize(cpl_leads=sum(cpl_leads),cpl_views=sum(cpl_views),cpc_clicks=sum(cpc_clicks),
+              cpc_leads=sum(cpc_leads),imptrf=sum(imptraf))%>%filter(!is.na(cap_id))%>%ungroup()
 
 # cap_data_daily$views<-if_else(cap_data_daily$cpl_views>0,cap_data_daily$cpl_views,cap_data_daily$cpc_clicks)
 # cap_data_daily$leads<-if_else(cap_data_daily$cpl_views>0,cap_data_daily$cpl_leads,cap_data_daily$cpc_leads)
 
-pricelist<-trf_daily_clean%>%select(cap_id,accepted_revenue,billable_revenue,revised_revenue,date)%>%filter(date>=startdate &  date<= datechk & accepted_revenue>0)%>%
+pricelist<-CDM_appview_clean%>%select(cap_id,accepted_revenue,billable_revenue,revised_revenue,date)%>%filter(date>=startdate &  date<= datechk & accepted_revenue>0)%>%
   arrange(cap_id,desc(date))%>%select(-date)%>%distinct()
+
+pricelist<-pricelist[!duplicated(pricelist$cap_id),]
 
 
 

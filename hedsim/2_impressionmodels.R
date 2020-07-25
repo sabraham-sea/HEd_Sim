@@ -11,6 +11,25 @@ overall_cap<-trf_daily_final%>%filter(date<=enddate)%>%mutate(yrmnth=zoo::as.yea
             cpc_leads=sum(accepted_cpc_leads),imptrf=sum(`daily_new$combined_daily.dcs_traffic`))%>%
   ungroup()%>%filter(!is.na(cap_id))%>%mutate(ctr=(cpl_views/imptrf),cr=(cpl_leads/cpl_views))
 
+month_traffic_org<-CDM_traffic_clean%>%mutate(month=month(date),yr=year(date))%>%group_by(month,yr,cap_id,degree_name,subject_name)%>%summarise(tottraff=sum(dcs_traffic))
+month_traffic_lat<-trf_daily_clean%>%mutate(month=month(date),yr=year(date))%>%group_by(month,yr,cap_id,degree_name,subject_name)%>%summarise(cpl_leads=sum(accepted_cpl_leads),cpl_views=sum(accepted_cpl_appviews),cpc_clicks=sum(accepted_cpc_clicks),
+                                                                                                                     cpc_leads=sum(accepted_cpc_leads),imptrf=sum(`daily_new$combined_daily.dcs_traffic`))
+all<-left_join(month_traffic_lat,month_traffic_org,by=c("cap_id","month","yr","degree_name","subject_name"))
+
+
+month_traffic_org1<-CDM_traffic_clean%>%group_by(date,cap_id,degree_name,subject_name)%>%summarise(tottraff=sum(dcs_traffic))
+month_traffic_lat1<-trf_daily_clean%>%group_by(date,cap_id,degree_name,subject_name)%>%summarise(cpl_leads=sum(accepted_cpl_leads),cpl_views=sum(accepted_cpl_appviews),cpc_clicks=sum(accepted_cpc_clicks),
+                                                                                                                                              cpc_leads=sum(accepted_cpc_leads),imptrf=sum(`daily_new$combined_daily.dcs_traffic`))
+all1<-left_join(month_traffic_lat1,month_traffic_org1,by=c("cap_id","date","degree_name","subject_name"))
+
+
+
+month_traffic_org2<-CDM_traffic_clean%>%group_by(date,cap_id,degree_name,subject_name,category_name)%>%summarise(tottraff=sum(dcs_traffic))
+month_traffic_lat2<-trf_daily_clean%>%group_by(date,cap_id,degree_name,subject_name,category_name)%>%summarise(cpl_leads=sum(accepted_cpl_leads),cpl_views=sum(accepted_cpl_appviews),cpc_clicks=sum(accepted_cpc_clicks),
+                                                                                                 cpc_leads=sum(accepted_cpc_leads),imptrf=sum(`daily_new$combined_daily.dcs_traffic`))
+all2<-left_join(month_traffic_lat2,month_traffic_org2,by=c("cap_id","date","degree_name","subject_name"))
+
+
 # Combine with cpl
 final_list<-readRDS('cpl_listJune.RDS')
 overall_cap<-inner_join(overall_cap,final_list,by="cap_id")%>%filter(!is.na(accepted_revenue))
@@ -56,7 +75,7 @@ pred_imp[[i]]<-predict(result_implead[[i]], new=data.frame(cpl_leads=billable_le
 i=i+1
 }
 
-predicted_impression<-pred_imp%>%unlist()%>%cbind(final_list)%>%as.data.frame()%>%rename( 'pred_imp'='.')
+predicted_impression<-pred_imp%>%unlist()%>%as.data.frame()%>%rename( 'pred_imp'='.')%>%cbind(final_list)
 predicted_impression$pred_imp<-as.numeric(predicted_impression$pred_imp)
 
 predicted_impression_fin<-predicted_impression%>%select(pred_imp,cap_id)

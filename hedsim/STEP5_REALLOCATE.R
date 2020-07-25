@@ -32,7 +32,7 @@ Combined_baseline<-left_join(Combined_baseline,erpi_avg,by=c("cap_id"))
 # Combine with cpl
 
 
-
+billable_leadrevenue<-readRDS('cpl_Junepred.RDS')
 
 
 get_return <- function(capfrom,capto,newrevlimit) {
