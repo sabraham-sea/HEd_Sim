@@ -246,3 +246,22 @@ final_list<-inner_join(all,clean_erpi,by="cap_id")
 
 saveRDS(final_list,"All_Augpred10.RDS")
 
+
+## Add Cluster info ##
+
+Final_Cluster<-readRDS('Final_Cluster.RDS')
+
+Final_Cluster_clean<-Final_Cluster%>%filter(!(cap_id=='1751' & school_name=='southern-new-hampshire-university'))%>%select(cap_id,cluster,finalcluster)%>%distinct()
+
+dt = data.table(Final_Cluster_clean)
+# check for dupes
+dtindex<-dt[duplicated(cap_id), cbind(.SD[1], number = .N), by = cap_id]
+dtall<-dt[!duplicated(cap_id), cbind(.SD[1], number = .N), by = cap_id]
+
+Final_Cluster_clean<-dtall%>%select(cap_id,cluster,finalcluster)
+All_Augpred10<- readRDS("All_Augpred10.RDS")
+
+All_Augpred10f<-left_join(All_Augpred10,Final_Cluster_clean,by="cap_id")
+
+saveRDS(All_Augpred10f,"All_Augpred10_valattest.RDS")
+

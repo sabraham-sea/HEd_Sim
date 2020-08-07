@@ -3,7 +3,7 @@ require(data.table)
 
 
 
-CPL<-readRDS('All_Augpred10.RDS')%>%filter(Product=='LO')
+CPL<-readRDS('All_Augpred10_valattest.RDS')%>%filter(Product=='LO')
 
 
 mnth_data2<-month_data_check%>%filter(month==5 & yr =='2020')%>%select(cap_id,cpl_leads)%>%rename(leadspast_tm2=cpl_leads)
@@ -19,7 +19,7 @@ CPL_mnth[is.na(CPL_mnth)] <- 0
 
 
 
-CPC<-readRDS('All_Augpred10.RDS')%>%filter(Product!='LO')
+CPC<-readRDS('All_Augpred10_valattest.RDS')%>%filter(Product!='LO')
 
 mnth_data2<-month_data_check%>%filter(month==5 & yr =='2020')%>%select(cap_id,cpc_leads)%>%rename(leadspast_tm2=cpc_leads)
 mnth_data1<-month_data_check%>%filter(month==6 & yr =='2020')%>%select(cap_id,cpc_leads)%>%rename(leadspast_tm1=cpc_leads)
@@ -92,6 +92,10 @@ dt = data.table(finalreport)
 # check for dupes
 dtindex<-dt[duplicated(cap_id), cbind(.SD[1], number = .N), by = cap_id]
 
+saveRDS(all2,"All_Augpred10_valattest.RDS") # Final Version
+
+write.xlsx(all2, file = "Adjusted_July24Org.xlsx", 
+           col.names = TRUE, row.names = TRUE, append = FALSE)
 
 
 write.xlsx(finalreport, file = "Adjusted_July24.xlsx", 
